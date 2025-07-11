@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MaxTour Policies Quiz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .quiz-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .quiz-content {
+            padding: 30px;
+        }
+
+        .question-counter {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .question {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .question.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .question h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 20px;
+            line-height: 1.4;
+        }
+
+        .scenario {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            font-style: italic;
+        }
+
+        .policy-badge {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin: 0 5px;
+        }
+
+        .options {
+            margin: 20px 0;
+        }
+
+        .option {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .option:hover {
+            border-color: #3498db;
+            background: #e3f2fd;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .option.selected {
+            border-color: #3498db;
+            background: #e3f2fd;
+        }
+
+        .option.correct {
+            border-color: #27ae60;
+            background: #d5f4e6;
+        }
+
+        .option.incorrect {
+            border-color: #e74c3c;
+            background: #fdeaea;
+        }
+
+        .explanation {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .explanation.show {
+            display: block;
+            animation: slideDown 0.5s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; max-height: 0; }
+            to { opacity: 1; max-height: 300px; }
+        }
+
+        .explanation h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .explanation p {
+            color: #856404;
+            margin-bottom: 8px;
+        }
+
+        .policy-highlight {
+            background: white;
+            border: 2px solid #856404;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        .policy-highlight strong {
+            color: #333;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            flex: 1;
+            max-width: 150px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .results.show {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .score-excellent {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        }
+
+        .score-good {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+
+        .score-needs-improvement {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+            padding: 15px 30px;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+
+        .policy-summary {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 30px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: left;
+        }
+
+        .policy-summary h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .policy-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .policy-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+
+        .policy-item strong {
+            color: #2c3e50;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .quiz-content {
+                padding: 20px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                max-width: none;
+            }
+
+            .policy-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="header">
+            <h1>💳 MaxTour Pricing, Payments & Booking Policies Quiz</h1>
+            <p>Test your knowledge of payment structures, age policies, and booking procedures</p>
+        </div>
+
+        <div class="quiz-content">
+            <div class="question-counter">
+                <span id="questionCount">Question 1 of 12</span>
+            </div>
+
+            <!-- Question 1 -->
+            <div class="question active" data-question="1">
+                <h3>What percentage deposit is required at booking?</h3>
+                <div class="options">
+                    <div class="option" data-answer="a">A) 10%</div>
+                    <div class="option" data-answer="b">B) 20%</div>
+                    <div class="option" data-answer="c">C) 25%</div>
+                    <div class="option" data-answer="d">D) 30%</div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: B) 20%</h4>
+                    <div class="policy-highlight">
+                        <p><strong>Payment Structure:</strong> All MaxTour bookings require a <span class="policy-badge">20% deposit</span> at the time of booking to secure the reservation.</p>
+                        <p><strong>Universal Policy:</strong> This applies to both single-day and multi-day tours.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 2 -->
+            <div class="question" data-question="2">
+                <h3>When is the remaining balance due?</h3>
+                <div class="options">
+                    <div class="option" data-answer="a">A) 3 days before departure</div>
+                    <div class="option" data-answer="b">B) 7 days before departure</div>
+                    <div class="option" data-answer="c">C) 10 days before departure</div>
+                    <div class="option" data-answer="d">D) 14 days before departure</div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: B) 7 days before departure</h4>
+                    <div class="policy-highlight">
+                        <p><strong>Standard Timeline:</strong> The remaining 80% balance is due <span class="policy-badge">7 days before departure</span></p>
+                        <p><strong>Automatic Charging:</strong> If paid by credit card, the same card will be automatically charged unless you arrange alternative payment.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 3 -->
+            <div class="question" data-question="3">
+                <h3>What happens if you book within 10 days of departure?</h3>
+                <div class="options">
+                    <div class="option" data-answer="a">A) 50% deposit required</div>
+                    <div class="option" data-answer="b">B) Full payment required at booking</div>
+                    <div class="option" data-answer="c">C) No deposit required</div>
+                    <div class="option" data-answer="d">D) 30% deposit required</div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: B) Full payment required at booking</h4>
+                    <div class="policy-highlight">
+                        <p><strong>10-Day Rule:</strong> Bookings made <span class="policy-badge">10 days or less</span> before departure require full payment immediately</p>
+                        <p><strong>Why:</strong> This ensures payment before the 7-day balance deadline and reduces last-minute payment issues.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 4 -->
+            <div class="question" data-question="4">
+                <h3>What is the minimum age for tours?</h3>
+                <div class="options">
+                    <div class="option" data-answer="a">A) 3 years old</div>
+                    <div class="option" data-answer="b">B) 5 years old</div>
+                    <div class="option" data-answer="c">C) 8 years old</div>
+                    <div class="option" data-answer="d">D) 12 years old</div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: B) 5 years old</h4>
+                    <div class="policy-highlight">
+                        <p><strong>Age Policy:</strong> Minimum age is <span class="policy-badge">5 years old</span> for all public tours</p>
+                        <p><strong>Exception:</strong> Private tours may accept younger children - inquiries go to groups@maxtour.co</p>
+                        <p><strong>Pricing:</strong> No children's pricing - full rate applies to ages 5+</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 5 -->
+            <div class="question" data-question="5">
+                <div class="scenario">
+                    <strong>Scenario:</strong> A family wants to bring their 4-year-old on a Grand Canyon tour. What should you tell them?
+                </div>
+                <h3>How do you handle this booking request?</h3>
+                <div class="options">
+                    <div class="option" data-answer="a">A) "We can make an exception for your child"</div>
+                    <div class="option" data-answer="b">B) "Children under 5 are not permitted on public tours"</div>
+                    <div class="option" data-answer="c">C) "Your child can come but won't have a seat"</div>
+                    <div class="option" data-answer="d">D) "We'll charge half price for the 4-year-old"</div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: B) "Children under 5 are not permitted on public tours"</h4>
+                    <div class="policy-highlight">
+                        <p><strong>Firm Policy:</strong> The 5-year minimum age is strictly enforced for safety and tour experience reasons</p>
+                        <p><strong>Alternative:</strong> Suggest they consider a private tour by contacting groups@maxtour.co</p>
+                        <p><strong>No Exceptions:</strong> Public tours cannot accommodate children under 5</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 6 -->
+            <div class="question" data-question="6">
+                <h3>Are booster seats available for children?</h3>
+                <div class="options">
+                    <div class="option" data-answer="a">A) Yes, for $15 extra</div>
+                    <div class="option" data-answer="b">B) Yes, at no extra cost</div>
+                    <div class="option" data-answer="c">C) No, families must bring their own</div>
+                    <div class="option" data-answer="d">D) Only for children under 8</div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: B) Yes, at no extra cost</h4>
+                    <div class="policy-highlight">
+                        <p><strong>Family-Friendly Service:</strong> Booster seats are available <span class="policy-badge">at no extra cost</span></p>
+                        <p><strong>How to Request:</strong> Simply let us know during booking if you need a booster seat</p>
+                        <p><strong>Safety First:</strong> We provide these to ensure all children travel safely</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 7 -->
+            <div class="question" data-question="7">
+                <h3>What mobility aids are allowed on tours?</h3>
+                <div class="options">
+                    <div class="option" data-answer="a">A) Wheelchairs are welcome</div>
+                    <div class="option" data-answer="b">B) Only lightweight mobility scooters</div>
+                    <div class="option" data-answer="c">C) No mobility aids are allowed</div>
+                    <div class="option" data-answer="d">D) Walkers and canes only</div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: C) No mobility aids are allowed</h4>
+                    <div class="policy-highlight">
+                        <p><strong>Accessibility Policy:</strong> Wheelchairs, walkers, and mobility scooters are <span class="policy-badge">not allowed</span></p>
+                        <p><strong>Result:</strong> Arriving with mobility aids will result in denial of boarding without refund</p>
+                        <p><strong>Reason:</strong> Tour locations and vehicle access cannot accommodate mobility aids safely</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 8 -->
+            <div class="question" data-question="8">
+                <div class="scenario">
+                    <strong>Scenario:</strong> A guest calls asking about a private tour for their family group of 8, including two children ages 3 and 4.
+                </div>
+                <h3>How should you handle this inquiry?</h3>
+                <div class="options">
+                    <div class="option" data-answer="a">A) Book them on a regular tour</div>
+                    <div class="option" data-answer="b">B) Forward the inquiry to groups@maxtour.co</div>
+                    <div class="option" data-answer="c">C) Tell them children under 5 cannot go</div>
+                    <div class="option" data-answer="d">D) Offer them a 50% discount</div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: B) Forward the inquiry to groups@maxtour.co</h4>
+                    <div class="policy-highlight">
+                        <p><strong>Private Tour Process:</strong> All private tour inquiries are forwarded to <span class="policy-badge">groups@maxtour.co</span></p>
+                        <p><strong>Age Flexibility:</strong> Private tours may have different age policies than public tours</p>
+                        <p><strong>Proper Channel:</strong> The groups team handles all private tour pricing and policies</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 9 -->
+            <div class="question" data-question="9">
+                <h3>What is MaxTour's cancellation policy for multi-day tours?</h3>
+                <div class="options">
+                    <div class="option" data-answer="a">A) 24 hours for full refund</div>
+                    <div class="option" data-answer="b">B) 7 days for full refund</div>
+                    <div class="option" data-answer="c">C) 14 days for full refund</div>
+                    <div class="option" data-answer="d">D) 48 hours for full refund</div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: B) 7 days for full refund</h4>
+                    <div class="policy-highlight">
+                        <p><strong>Multi-Day Policy:</strong> Overnight tours require <span class="policy-badge">7 days advance notice</span> for full refund</p>
+                        <p><strong>Examples:</strong> 2-Day Grand Canyon & Antelope Canyon, 3-Day Grand Canyon, Bryce, Zion tours</p>
+                        <p><strong>vs. Single Day:</strong> Single day tours have a 48-hour cancellation policy</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 10 -->
+            <div class="question" data-question="10">
+                <h3>Are there exceptions to the cancellation policy?</h3>
+                <div class="options">
+                    <div class="option" data-answer="a">A) Yes, for medical emergencies</div>
+                    <div class="option" data-answer="b">B) Yes, for weather conditions</div>
+                    <div class="option" data-answer="c">C) No exceptions will be made</div>
+                    <div class="option" data-answer="d">D) Only for flight delays</div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: C) No exceptions will be made</h4>
+                    <div class="policy-highlight">
+                        <p><strong>Firm Policy:</strong> <span class="policy-badge">No exceptions</span> will be made to the cancellation policy</p>
+                        <p><strong>Protection Option:</strong> Guests can purchase "Protect My Trip" for coverage of unforeseen events</p>
+                        <p><strong>Note:</strong> This differs from actual practice where exceptions are sometimes granted for deaths, etc.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 11 -->
+            <div class="question" data-question="11">
+                <div class="scenario">
+                    <strong>Scenario:</strong> A guest booked a 2-day tour 15 days ago. Their tour starts in 5 days and they haven't paid the balance yet.
+                </div>
+                <h3>What happens next?</h3>
+                <div class="options">
+                    <div class="option" data-answer="a">A) They can pay on the day of the tour</div>
+                    <div class="option" data-answer="b">B) Their card will be automatically charged</div>
+                    <div class="option" data-answer="c">C) They get an extra 3 days to pay</div>
+                    <div class="option" data-answer="d">D) The tour is automatically cancelled</div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: B) Their card will be automatically charged</h4>
+                    <div class="policy-highlight">
+                        <p><strong>Automatic Charging:</strong> If a credit card was used for the deposit, <span class="policy-badge">the same card will be charged</span> for the balance when due</p>
+                        <p><strong>Timeline:</strong> Balance was due 7 days before (2 days ago), so automatic charging occurs</p>
+                        <p><strong>Prevention:</strong> Guests must arrange alternative payment before the 7-day deadline</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 12 -->
+            <div class="question" data-question="12">
+                <div class="scenario">
+                    <strong>Scenario:</strong> A guest with a wheelchair wants to book a Grand Canyon tour and asks if you can accommodate them.
+                </div>
+                <h3>What is the appropriate response?</h3>
+                <div class="options">
+                    <div class="option" data-answer="a">A) "We can make special arrangements"</div>
+                    <div class="option" data-answer="b">B) "You can come but leave the wheelchair on the bus"</div>
+                    <div class="option" data-answer="c">C) "Unfortunately, we cannot accommodate wheelchairs on our tours"</div>
+                    <div class="option" data-answer="d">D) "We'll charge an extra fee for accommodation"</div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: C) "Unfortunately, we cannot accommodate wheelchairs on our tours"</h4>
+                    <div class="policy-highlight">
+                        <p><strong>Clear Communication:</strong> Be direct but polite about <span class="policy-badge">accessibility limitations</span></p>
+                        <p><strong>Firm Policy:</strong> Arriving with mobility aids results in denial of boarding without refund</p>
+                        <p><strong>Safety Reason:</strong> Tour locations and vehicle access cannot safely accommodate mobility aids</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" id="prevBtn" onclick="changeQuestion(-1)">Previous</button>
+                <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">Next</button>
+            </div>
+        </div>
+
+        <div class="results" id="results">
+            <h2>🎉 Quiz Complete!</h2>
+            <div class="score-circle" id="scoreCircle">
+                <span id="scoreText"></span>
+            </div>
+            <h3 id="scoreMessage"></h3>
+            <p id="scoreDetails"></p>
+            
+            <div class="policy-summary">
+                <h4>📋 Key Policy Summary</h4>
+                <div class="policy-grid">
+                    <div class="policy-item">
+                        <strong>Payment Structure</strong><br>
+                        • 20% deposit at booking<br>
+                        • Balance due 7 days before<br>
+                        • Full payment if ≤10 days<br>
+                        • Automatic card charging
+                    </div>
+                    <div class="policy-item">
+                        <strong>Age & Accessibility</strong><br>
+                        • Minimum age: 5 years<br>
+                        • No children's pricing<br>
+                        • Free booster seats<br>
+                        • No mobility aids allowed
+                    </div>
+                    <div class="policy-item">
+                        <strong>Cancellation Policies</strong><br>
+                        • Single day: 48 hours<br>
+                        • Multi-day: 7 days<br>
+                        • No exceptions made<br>
+                        • Protect My Trip available
+                    </div>
+                    <div class="policy-item">
+                        <strong>Special Requests</strong><br>
+                        • Private tours: groups@maxtour.co<br>
+                        • Under 5: private tours only<br>
+                        • Mobility needs: not accommodated<br>
+                        • Payment issues: automatic charging
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn restart-btn" onclick="restartQuiz()">Take Quiz Again</button>
+        </div>
+    </div>
+
+    <script>
+        let currentQuestion = 1;
+        const totalQuestions = 12;
+        let userAnswers = {};
+        let correctAnswers = {
+            1: 'b', 2: 'b', 3: 'b', 4: 'b', 5: 'b', 6: 'b',
+            7: 'c', 8: 'b', 9: 'b', 10: 'c', 11: 'b', 12: 'c'
+        };
+
+        function updateQuestionCounter() {
+            document.getElementById('questionCount').textContent = `Question ${currentQuestion} of ${totalQuestions}`;
+        }
+
+        function showQuestion(questionNum) {
+            document.querySelectorAll('.question').forEach(q => {
+                q.classList.remove('active');
+            });
+            document.querySelector(`[data-question="${questionNum}"]`).classList.add('active');
+            updateQuestionCounter();
+            updateNavButtons();
+        }
+
+        function updateNavButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.style.display = currentQuestion === 1 ? 'none' : 'block';
+            
+            if (currentQuestion === totalQuestions) {
+                nextBtn.textContent = 'Finish Quiz';
+                nextBtn.onclick = finishQuiz;
+            } else {
+                nextBtn.textContent = 'Next';
+                nextBtn.onclick = nextQuestion;
+            }
+        }
+
+        function nextQuestion() {
+            const currentQuestionDiv = document.querySelector(`[data-question="${currentQuestion}"]`);
+            const selectedOption = currentQuestionDiv.querySelector('.option.selected');
+            
+            if (!selectedOption) {
+                alert('Please select an answer before continuing.');
+                return;
+            }
+            
+            if (currentQuestion < totalQuestions) {
+                currentQuestion++;
+                showQuestion(currentQuestion);
+            }
+        }
+
+        function changeQuestion(direction) {
+            currentQuestion += direction;
+            if (currentQuestion < 1) currentQuestion = 1;
+            if (currentQuestion > totalQuestions) currentQuestion = totalQuestions;
+            showQuestion(currentQuestion);
+        }
+
+        function finishQuiz() {
+            const currentQuestionDiv = document.querySelector(`[data-question="${currentQuestion}"]`);
+            const selectedOption = currentQuestionDiv.querySelector('.option.selected');
+            
+            if (!selectedOption) {
+                alert('Please select an answer before finishing the quiz.');
+                return;
+            }
+            
+            calculateScore();
+        }
+
+        function calculateScore() {
+            let correctCount = 0;
+            
+            for (let i = 1; i <= totalQuestions; i++) {
+                if (userAnswers[i] === correctAnswers[i]) {
+                    correctCount++;
+                }
+            }
+            
+            const percentage = Math.round((correctCount / totalQuestions) * 100);
+            displayResults(correctCount, percentage);
+        }
+
+        function displayResults(correctCount, percentage) {
+            document.querySelector('.quiz-content').style.display = 'none';
+            const results = document.getElementById('results');
+            results.classList.add('show');
+            
+            const scoreCircle = document.getElementById('scoreCircle');
+            const scoreText = document.getElementById('scoreText');
+            const scoreMessage = document.getElementById('scoreMessage');
+            const scoreDetails = document.getElementById('scoreDetails');
+            
+            scoreText.textContent = `${percentage}%`;
+            scoreDetails.textContent = `You answered ${correctCount} out of ${totalQuestions} questions correctly.`;
+            
+            if (percentage >= 90) {
+                scoreCircle.className = 'score-circle score-excellent';
+                scoreMessage.textContent = 'Excellent! You have mastered MaxTour\'s policies!';
+            } else if (percentage >= 75) {
+                scoreCircle.className = 'score-circle score-good';
+                scoreMessage.textContent = 'Good job! Review the areas where you missed questions.';
+            } else {
+                scoreCircle.className = 'score-circle score-needs-improvement';
+                scoreMessage.textContent = 'Study the policies more before handling customer inquiries.';
+            }
+        }
+
+        function restartQuiz() {
+            currentQuestion = 1;
+            userAnswers = {};
+            
+            // Reset all options
+            document.querySelectorAll('.option').forEach(option => {
+                option.classList.remove('selected', 'correct', 'incorrect');
+            });
+            
+            // Hide all explanations
+            document.querySelectorAll('.explanation').forEach(exp => {
+                exp.classList.remove('show');
+            });
+            
+            // Show quiz content and hide results
+            document.querySelector('.quiz-content').style.display = 'block';
+            document.getElementById('results').classList.remove('show');
+            
+            showQuestion(1);
+        }
+
+        // Handle option selection
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('option')) {
+                const questionDiv = e.target.closest('.question');
+                const questionNum = parseInt(questionDiv.dataset.question);
+                
+                // Remove previous selection
+                questionDiv.querySelectorAll('.option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                
+                // Add selection to clicked option
+                e.target.classList.add('selected');
+                
+                // Store user answer
+                userAnswers[questionNum] = e.target.dataset.answer;
+                
+                // Show explanation after a short delay
+                setTimeout(() => {
+                    showExplanation(questionNum);
+                }, 300);
+            }
+        });
+
+        function showExplanation(questionNum) {
+            const questionDiv = document.querySelector(`[data-question="${questionNum}"]`);
+            const explanation = questionDiv.querySelector('.explanation');
+            const correctAnswer = correctAnswers[questionNum];
+            const userAnswer = userAnswers[questionNum];
+            
+            // Highlight correct and incorrect answers
+            questionDiv.querySelectorAll('.option').forEach(option => {
+                if (option.dataset.answer === correctAnswer) {
+                    option.classList.add('correct');
+                } else if (option.dataset.answer === userAnswer && userAnswer !== correctAnswer) {
+                    option.classList.add('incorrect');
+                }
+            });
+            
+            explanation.classList.add('show');
+        }
+
+        // Initialize
+        updateNavButtons();
+    </script>
+</body>
+</html>
