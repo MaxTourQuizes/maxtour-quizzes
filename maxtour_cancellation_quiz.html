@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MaxTour Cancellation Policy Quiz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .quiz-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .quiz-content {
+            padding: 30px;
+        }
+
+        .question-counter {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .question {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .question.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .question h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 20px;
+            line-height: 1.4;
+        }
+
+        .scenario {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            font-style: italic;
+        }
+
+        .options {
+            margin: 20px 0;
+        }
+
+        .option {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .option:hover {
+            border-color: #3498db;
+            background: #e3f2fd;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .option.selected {
+            border-color: #3498db;
+            background: #e3f2fd;
+        }
+
+        .option.correct {
+            border-color: #27ae60;
+            background: #d5f4e6;
+        }
+
+        .option.incorrect {
+            border-color: #e74c3c;
+            background: #fdeaea;
+        }
+
+        .explanation {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .explanation.show {
+            display: block;
+            animation: slideDown 0.5s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; max-height: 0; }
+            to { opacity: 1; max-height: 200px; }
+        }
+
+        .explanation h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .explanation p {
+            color: #856404;
+            margin-bottom: 8px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            flex: 1;
+            max-width: 150px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .results.show {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .score-excellent {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        }
+
+        .score-good {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+
+        .score-needs-improvement {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+            padding: 15px 30px;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+
+        .policy-badge {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin: 0 5px;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .quiz-content {
+                padding: 20px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="header">
+            <h1>🎯 MaxTour Cancellation Policy Quiz</h1>
+            <p>Test your knowledge of MaxTour's cancellation policies and procedures</p>
+        </div>
+
+        <div class="quiz-content">
+            <div class="question-counter">
+                <span id="questionCount">Question 1 of 15</span>
+            </div>
+
+            <!-- Question 1 -->
+            <div class="question active" data-question="1">
+                <h3>What is the cancellation deadline for single day tours booked directly with MaxTour?</h3>
+                <div class="options">
+                    <div class="option" data-answer="a">A) 24 hours before tour</div>
+                    <div class="option" data-answer="b">B) 48 hours before tour</div>
+                    <div class="option" data-answer="c">C) 7 days before tour</div>
+                    <div class="option" data-answer="d">D) 72 hours before tour</div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: B) 48 hours before tour</h4>
+                    <p><strong>Policy:</strong> Single day tours require <span class="highlight">48 hours or more</span> advance notice for a full refund.</p>
+                    <p><strong>Examples:</strong> Grand Canyon West, Hoover Dam, Seven Magic Mountains Tour, Death Valley, Antelope Canyon</p>
+                </div>
+            </div>
+
+            <!-- Question 2 -->
+            <div class="question" data-question="2">
+                <h3>What is the cancellation deadline for overnight tours?</h3>
+                <div class="options">
+                    <div class="option" data-answer="a">A) 48 hours before tour</div>
+                    <div class="option" data-answer="b">B) 5 days before tour</div>
+                    <div class="option" data-answer="c">C) 7 days before tour</div>
+                    <div class="option" data-answer="d">D) 10 days before tour</div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: C) 7 days before tour</h4>
+                    <p><strong>Policy:</strong> Overnight tours require <span class="highlight">7 days or more</span> advance notice for a full refund.</p>
+                    <p><strong>Examples:</strong> 2 Day Grand Canyon Antelope Canyon Tour, 3 Day Grand Canyon, Bryce, Zion, Antelope Canyon, Monument Valley Tour</p>
+                </div>
+            </div>
+
+            <!-- Question 3 -->
+            <div class="question" data-question="3">
+                <h3>A guest booked a Grand Canyon West tour through Viator and wants to cancel. What should you tell them?</h3>
+                <div class="options">
+                    <div class="option" data-answer="a">A) "Our 48-hour policy applies to all bookings"</div>
+                    <div class="option" data-answer="b">B) "You need to contact Viator for cancellations"</div>
+                    <div class="option" data-answer="c">C) "I can cancel this for you right now"</div>
+                    <div class="option" data-answer="d">D) "You can only get store credit"</div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: B) "You need to contact Viator for cancellations"</h4>
+                    <p><strong>Policy:</strong> Third-party bookings have their own cancellation rules. MaxTour's policy does not apply.</p>
+                    <p><strong>Important:</strong> Never change 3rd party dates in Rezdy. Direct them to their booking agent.</p>
+                </div>
+            </div>
+
+            <!-- Question 4 -->
+            <div class="question" data-question="4">
+                <div class="scenario">
+                    <strong>Scenario:</strong> A guest calls wanting to cancel their 2-day tour. They booked it directly with MaxTour 6 days ago, and their tour starts tomorrow. They say their grandmother passed away this morning.
+                </div>
+                <h3>How should you handle this cancellation request?</h3>
+                <div class="options">
+                    <div class="option" data-answer="a">A) Deny the refund - it's within 7 days</div>
+                    <div class="option" data-answer="b">B) Grant an exception due to death in immediate family</div>
+                    <div class="option" data-answer="c">C) Offer only store credit</div>
+                    <div class="option" data-answer="d">D) Tell them to file an insurance claim</div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: B) Grant an exception due to death in immediate family</h4>
+                    <p><strong>Policy:</strong> Deaths within the traveling party or immediate family members (spouse, parent, sibling, grandparent) qualify for an automatic exception.</p>
+                    <p><strong>Best Practice:</strong> Express sympathy and inform them this is a special consideration not commonly granted.</p>
+                </div>
+            </div>
+
+            <!-- Question 5 -->
+            <div class="question" data-question="5">
+                <h3>When is full payment required for all bookings?</h3>
+                <div class="options">
+                    <div class="option" data-answer="a">A) At the time of booking</div>
+                    <div class="option" data-answer="b">B) 7 days before departure</div>
+                    <div class="option" data-answer="c">C) For bookings made 10 days or less before departure</div>
+                    <div class="option" data-answer="d">D) Only for overnight tours</div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: C) For bookings made 10 days or less before departure</h4>
+                    <p><strong>Standard Schedule:</strong> 20% deposit at booking, balance due 7 days before departure</p>
+                    <p><strong>Exception:</strong> Bookings made ≤10 days before departure require full payment immediately</p>
+                </div>
+            </div>
+
+            <!-- Question 6 -->
+            <div class="question" data-question="6">
+                <div class="scenario">
+                    <strong>Scenario:</strong> A guest wants to cancel their Antelope Canyon day tour. They booked directly with MaxTour and are calling 47 hours before the tour. They say they're feeling sick but don't have COVID-19.
+                </div>
+                <h3>What's the appropriate response?</h3>
+                <div class="options">
+                    <div class="option" data-answer="a">A) Full refund - it's within the 48-hour policy</div>
+                    <div class="option" data-answer="b">B) No refund - they missed the deadline by 1 hour</div>
+                    <div class="option" data-answer="c">C) Consider an exception since it's close to the deadline</div>
+                    <div class="option" data-answer="d">D) Offer to reschedule only</div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: C) Consider an exception since it's close to the deadline</h4>
+                    <p><strong>Exception Guidelines:</strong> For cancellations within 6 hours of the 48-hour cutoff, consider granting an exception if the reason sounds honest and customer is polite.</p>
+                    <p><strong>Note:</strong> 47 hours is only 1 hour past the 48-hour deadline, making this a good candidate for an exception.</p>
+                </div>
+            </div>
+
+            <!-- Question 7 -->
+            <div class="question" data-question="7">
+                <h3>What does the "Protect Your Trip" option cover?</h3>
+                <div class="options">
+                    <div class="option" data-answer="a">A) Any reason for cancellation</div>
+                    <div class="option" data-answer="b">B) Only COVID-19 related cancellations</div>
+                    <div class="option" data-answer="c">C) Unforeseen events beyond customer's control</div>
+                    <div class="option" data-answer="d">D) Weather-related cancellations only</div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: C) Unforeseen events beyond customer's control</h4>
+                    <p><strong>Covered Events:</strong> Airline delays, traffic accidents, COVID-19, injuries, sickness, and other unforeseen events</p>
+                    <p><strong>Requirements:</strong> Must purchase protection, cancel before tour starts, provide proof within 10 days</p>
+                    <p><strong>Not Covered:</strong> Known events or planned changes</p>
+                </div>
+            </div>
+
+            <!-- Question 8 -->
+            <div class="question" data-question="8">
+                <div class="scenario">
+                    <strong>Scenario:</strong> A guest purchased "Protect Your Trip" and wants to cancel due to testing positive for COVID-19. What documentation do they need to provide?
+                </div>
+                <h3>What proof is required for COVID-19 cancellations?</h3>
+                <div class="options">
+                    <div class="option" data-answer="a">A) Just a positive test result</div>
+                    <div class="option" data-answer="b">B) Doctor's note only</div>
+                    <div class="option" data-answer="c">C) Positive test result and photo ID in the same photo</div>
+                    <div class="option" data-answer="d">D) Hospital documentation</div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: C) Positive test result and photo ID in the same photo</h4>
+                    <p><strong>COVID-19 Requirements:</strong> Positive test result AND photo ID must be in the same photo to verify authenticity</p>
+                    <p><strong>Timing:</strong> Must provide proof within 10 days after tour start date</p>
+                </div>
+            </div>
+
+            <!-- Question 9 -->
+            <div class="question" data-question="9">
+                <h3>A guest booked through TripAdvisor and wants to change their tour date. What should you do?</h3>
+                <div class="options">
+                    <div class="option" data-answer="a">A) Change the date in Rezdy</div>
+                    <div class="option" data-answer="b">B) Tell them to contact TripAdvisor</div>
+                    <div class="option" data-answer="c">C) Charge a date change fee</div>
+                    <div class="option" data-answer="d">D) Offer them a direct booking instead</div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: B) Tell them to contact TripAdvisor</h4>
+                    <p><strong>Important Rule:</strong> Never change 3rd party dates in Rezdy</p>
+                    <p><strong>Process:</strong> Direct them to contact the company they booked with for all changes</p>
+                    <p><strong>Note:</strong> TripAdvisor may list tours on other sites like Groupon or Expedia</p>
+                </div>
+            </div>
+
+            <!-- Question 10 -->
+            <div class="question" data-question="10">
+                <div class="scenario">
+                    <strong>Scenario:</strong> A guest wants to cancel their 3-day tour. They booked 5 days ago and the tour starts in 6 days. They say they just found out they have to work and their boss won't let them take time off.
+                </div>
+                <h3>How should you handle this cancellation?</h3>
+                <div class="options">
+                    <div class="option" data-answer="a">A) Automatic full refund</div>
+                    <div class="option" data-answer="b">B) Consider an exception - it's within 36 hours of deadline</div>
+                    <div class="option" data-answer="c">C) No refund - policy is firm</div>
+                    <div class="option" data-answer="d">D) Offer store credit only</div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: B) Consider an exception - it's within 36 hours of deadline</h4>
+                    <p><strong>Exception Window:</strong> For cancellations within 36 hours of the 7-day deadline, exceptions can be made if the reason sounds legitimate and customer is polite</p>
+                    <p><strong>Timeline:</strong> Booked 5 days ago, tour in 6 days = within 36-hour exception window</p>
+                    <p><strong>Judgment Call:</strong> Work obligations could be considered legitimate</p>
+                </div>
+            </div>
+
+            <!-- Question 11 -->
+            <div class="question" data-question="11">
+                <h3>What should you tell customers when granting a cancellation exception?</h3>
+                <div class="options">
+                    <div class="option" data-answer="a">A) "This is our standard policy"</div>
+                    <div class="option" data-answer="b">B) "Everyone gets exceptions"</div>
+                    <div class="option" data-answer="c">C) "This is a special consideration not commonly granted"</div>
+                    <div class="option" data-answer="d">D) "You can tell others about this"</div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: C) "This is a special consideration not commonly granted"</h4>
+                    <p><strong>Best Practice:</strong> Inform customers that an exception is special, not standard</p>
+                    <p><strong>Discretion Request:</strong> Ask them not to discuss the exception in public forums or reviews</p>
+                    <p><strong>Goal:</strong> Maintain policy integrity while providing exceptional service</p>
+                </div>
+            </div>
+
+            <!-- Question 12 -->
+            <div class="question" data-question="12">
+                <h3>How can you help a guest who doesn't remember where they booked their tour through a third party?</h3>
+                <div class="options">
+                    <div class="option" data-answer="a">A) Tell them to check their email</div>
+                    <div class="option" data-answer="b">B) Look it up in Viator backend and click "View Ticket"</div>
+                    <div class="option" data-answer="c">C) Assume it was TripAdvisor</div>
+                    <div class="option" data-answer="d">D) Transfer them to management</div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: B) Look it up in Viator backend and click "View Ticket"</h4>
+                    <p><strong>Process:</strong> Search for the booking in Viator backend, then click "View Ticket" to see original booking source</p>
+                    <p><strong>Important:</strong> Don't assume you know where a booking was made - TripAdvisor may list tours on Groupon, Expedia, or many other sites</p>
+                </div>
+            </div>
+
+            <!-- Question 13 -->
+            <div class="question" data-question="13">
+                <h3>What is the deposit requirement for both single day and overnight tours?</h3>
+                <div class="options">
+                    <div class="option" data-answer="a">A) 10% deposit</div>
+                    <div class="option" data-answer="b">B) 15% deposit</div>
+                    <div class="option" data-answer="c">C) 20% deposit</div>
+                    <div class="option" data-answer="d">D) 25% deposit</div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: C) 20% deposit</h4>
+                    <p><strong>Universal Policy:</strong> Both single day and overnight tours require a 20% deposit at booking</p>
+                    <p><strong>Balance Due:</strong> Remaining 80% due 7 days before departure (unless booked within 10 days)</p>
+                </div>
+            </div>
+
+            <!-- Question 14 -->
+            <div class="question" data-question="14">
+                <div class="scenario">
+                    <strong>Scenario:</strong> A guest calls to cancel their Hoover Dam tour. They booked directly with MaxTour and the tour is in 8 hours. They purchased "Protect Your Trip" and say they just got in a car accident and their car won't start.
+                </div>
+                <h3>What should you do?</h3>
+                <div class="options">
+                    <div class="option" data-answer="a">A) Deny refund - too late to cancel</div>
+                    <div class="option" data-answer="b">B) Process Protect Your Trip claim with proper documentation</div>
+                    <div class="option" data-answer="c">C) Offer store credit only</div>
+                    <div class="option" data-answer="d">D) Tell them to use Uber</div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: B) Process Protect Your Trip claim with proper documentation</h4>
+                    <p><strong>Qualifications Met:</strong> ✓ Purchased protection ✓ Unforeseen event ✓ Canceling before tour starts</p>
+                    <p><strong>Required:</strong> They must provide evidence of the car accident within 10 days</p>
+                    <p><strong>Coverage:</strong> Car accidents are specifically listed as covered events</p>
+                </div>
+            </div>
+
+            <!-- Question 15 -->
+            <div class="question" data-question="15">
+                <h3>What does the booking page say about MaxTour's cancellation policy?</h3>
+                <div class="options">
+                    <div class="option" data-answer="a">A) "All sales final"</div>
+                    <div class="option" data-answer="b">B) "Book Risk Free Today! Free Cancellation 48 Hours or More Before Your Tour Time"</div>
+                    <div class="option" data-answer="c">C) "No cancellations accepted"</div>
+                    <div class="option" data-answer="d">D) "Cancellations subject to fee"</div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: B) "Book Risk Free Today! Free Cancellation 48 Hours or More Before Your Tour Time"</h4>
+                    <p><strong>Marketing Message:</strong> This message applies to single day tours (48-hour policy)</p>
+                    <p><strong>Note:</strong> Overnight tours have a 7-day policy, but the 48-hour message is used for general marketing</p>
+                    <p><strong>Next Step:</strong> Protect Your Trip option is offered on the following page</p>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" id="prevBtn" onclick="changeQuestion(-1)">Previous</button>
+                <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">Next</button>
+            </div>
+        </div>
+
+        <div class="results" id="results">
+            <h2>🎉 Quiz Complete!</h2>
+            <div class="score-circle" id="scoreCircle">
+                <span id="scoreText"></span>
+            </div>
+            <h3 id="scoreMessage"></h3>
+            <p id="scoreDetails"></p>
+            
+            <div style="margin: 30px 0; text-align: left; max-width: 600px; margin-left: auto; margin-right: auto;">
+                <h4>📚 Key Policy Reminders:</h4>
+                <ul style="text-align: left; margin-top: 15px;">
+                    <li><strong>Single Day Tours:</strong> <span class="policy-badge">48 hours</span> cancellation policy</li>
+                    <li><strong>Overnight Tours:</strong> <span class="policy-badge">7 days</span> cancellation policy</li>
+                    <li><strong>Third-Party Bookings:</strong> Direct to booking agent, never change in Rezdy</li>
+                    <li><strong>Exceptions:</strong> Deaths in immediate family = automatic, other cases use judgment</li>
+                    <li><strong>Protect Your Trip:</strong> Covers unforeseen events with proper documentation</li>
+                    <li><strong>Payment:</strong> 20% deposit, balance due 7 days before (full payment if ≤10 days)</li>
+                </ul>
+            </div>
+            
+            <button class="btn restart-btn" onclick="restartQuiz()">Take Quiz Again</button>
+        </div>
+    </div>
+
+    <script>
+        let currentQuestion = 1;
+        const totalQuestions = 15;
+        let userAnswers = {};
+        let correctAnswers = {
+            1: 'b', 2: 'c', 3: 'b', 4: 'b', 5: 'c',
+            6: 'c', 7: 'c', 8: 'c', 9: 'b', 10: 'b',
+            11: 'c', 12: 'b', 13: 'c', 14: 'b', 15: 'b'
+        };
+
+        function updateQuestionCounter() {
+            document.getElementById('questionCount').textContent = `Question ${currentQuestion} of ${totalQuestions}`;
+        }
+
+        function showQuestion(questionNum) {
+            document.querySelectorAll('.question').forEach(q => {
+                q.classList.remove('active');
+            });
+            document.querySelector(`[data-question="${questionNum}"]`).classList.add('active');
+            updateQuestionCounter();
+            updateNavButtons();
+        }
+
+        function updateNavButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.style.display = currentQuestion === 1 ? 'none' : 'block';
+            
+            if (currentQuestion === totalQuestions) {
+                nextBtn.textContent = 'Finish Quiz';
+                nextBtn.onclick = finishQuiz;
+            } else {
+                nextBtn.textContent = 'Next';
+                nextBtn.onclick = nextQuestion;
+            }
+        }
+
+        function nextQuestion() {
+            const currentQuestionDiv = document.querySelector(`[data-question="${currentQuestion}"]`);
+            const selectedOption = currentQuestionDiv.querySelector('.option.selected');
+            
+            if (!selectedOption) {
+                alert('Please select an answer before continuing.');
+                return;
+            }
+            
+            if (currentQuestion < totalQuestions) {
+                currentQuestion++;
+                showQuestion(currentQuestion);
+            }
+        }
+
+        function changeQuestion(direction) {
+            currentQuestion += direction;
+            if (currentQuestion < 1) currentQuestion = 1;
+            if (currentQuestion > totalQuestions) currentQuestion = totalQuestions;
+            showQuestion(currentQuestion);
+        }
+
+        function finishQuiz() {
+            const currentQuestionDiv = document.querySelector(`[data-question="${currentQuestion}"]`);
+            const selectedOption = currentQuestionDiv.querySelector('.option.selected');
+            
+            if (!selectedOption) {
+                alert('Please select an answer before finishing the quiz.');
+                return;
+            }
+            
+            calculateScore();
+        }
+
+        function calculateScore() {
+            let correctCount = 0;
+            
+            for (let i = 1; i <= totalQuestions; i++) {
+                if (userAnswers[i] === correctAnswers[i]) {
+                    correctCount++;
+                }
+            }
+            
+            const percentage = Math.round((correctCount / totalQuestions) * 100);
+            displayResults(correctCount, percentage);
+        }
+
+        function displayResults(correctCount, percentage) {
+            document.querySelector('.quiz-content').style.display = 'none';
+            const results = document.getElementById('results');
+            results.classList.add('show');
+            
+            const scoreCircle = document.getElementById('scoreCircle');
+            const scoreText = document.getElementById('scoreText');
+            const scoreMessage = document.getElementById('scoreMessage');
+            const scoreDetails = document.getElementById('scoreDetails');
+            
+            scoreText.textContent = `${percentage}%`;
+            scoreDetails.textContent = `You answered ${correctCount} out of ${totalQuestions} questions correctly.`;
+            
+            if (percentage >= 90) {
+                scoreCircle.className = 'score-circle score-excellent';
+                scoreMessage.textContent = 'Excellent! You have mastered MaxTour\'s cancellation policies!';
+            } else if (percentage >= 75) {
+                scoreCircle.className = 'score-circle score-good';
+                scoreMessage.textContent = 'Good job! You understand most of the policies, but review a few areas.';
+            } else {
+                scoreCircle.className = 'score-circle score-needs-improvement';
+                scoreMessage.textContent = 'You should review the cancellation policies before handling customer calls.';
+            }
+        }
+
+        function restartQuiz() {
+            currentQuestion = 1;
+            userAnswers = {};
+            
+            // Reset all options
+            document.querySelectorAll('.option').forEach(option => {
+                option.classList.remove('selected', 'correct', 'incorrect');
+            });
+            
+            // Hide all explanations
+            document.querySelectorAll('.explanation').forEach(exp => {
+                exp.classList.remove('show');
+            });
+            
+            // Show quiz content and hide results
+            document.querySelector('.quiz-content').style.display = 'block';
+            document.getElementById('results').classList.remove('show');
+            
+            showQuestion(1);
+        }
+
+        // Handle option selection
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('option')) {
+                const questionDiv = e.target.closest('.question');
+                const questionNum = parseInt(questionDiv.dataset.question);
+                
+                // Remove previous selection
+                questionDiv.querySelectorAll('.option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                
+                // Add selection to clicked option
+                e.target.classList.add('selected');
+                
+                // Store user answer
+                userAnswers[questionNum] = e.target.dataset.answer;
+                
+                // Show explanation after a short delay
+                setTimeout(() => {
+                    showExplanation(questionNum);
+                }, 300);
+            }
+        });
+
+        function showExplanation(questionNum) {
+            const questionDiv = document.querySelector(`[data-question="${questionNum}"]`);
+            const explanation = questionDiv.querySelector('.explanation');
+            const correctAnswer = correctAnswers[questionNum];
+            const userAnswer = userAnswers[questionNum];
+            
+            // Highlight correct and incorrect answers
+            questionDiv.querySelectorAll('.option').forEach(option => {
+                if (option.dataset.answer === correctAnswer) {
+                    option.classList.add('correct');
+                } else if (option.dataset.answer === userAnswer && userAnswer !== correctAnswer) {
+                    option.classList.add('incorrect');
+                }
+            });
+            
+            explanation.classList.add('show');
+        }
+
+        // Initialize
+        updateNavButtons();
+    </script>
+</body>
+</html>
