@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MaxTour Pickup Radius Quiz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .quiz-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .quiz-content {
+            padding: 30px;
+        }
+
+        .question-counter {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .question {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+            margin-bottom: 30px;
+        }
+
+        .question.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hotel-card {
+            background: #f8f9fa;
+            border: 3px solid #e9ecef;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .hotel-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .hotel-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .location-info {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .options {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            padding: 12px 30px;
+            border: 3px solid #e9ecef;
+            border-radius: 25px;
+            background: white;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            min-width: 100px;
+        }
+
+        .option-btn:hover {
+            border-color: #3498db;
+            background: #e3f2fd;
+            transform: scale(1.05);
+        }
+
+        .option-btn.selected {
+            border-color: #3498db;
+            background: #3498db;
+            color: white;
+        }
+
+        .option-btn.correct {
+            border-color: #27ae60;
+            background: #27ae60;
+            color: white;
+        }
+
+        .option-btn.incorrect {
+            border-color: #e74c3c;
+            background: #e74c3c;
+            color: white;
+        }
+
+        .follow-up {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #fff3cd;
+            border: 2px solid #ffeaa7;
+            border-radius: 10px;
+        }
+
+        .follow-up.show {
+            display: block;
+            animation: slideDown 0.5s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; max-height: 0; }
+            to { opacity: 1; max-height: 300px; }
+        }
+
+        .follow-up h4 {
+            color: #856404;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .follow-up-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .follow-up-option {
+            padding: 10px 15px;
+            border: 2px solid #856404;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .follow-up-option:hover {
+            background: #856404;
+            color: white;
+        }
+
+        .follow-up-option.selected {
+            background: #856404;
+            color: white;
+        }
+
+        .explanation {
+            background: #e8f5e8;
+            border: 2px solid #4caf50;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .explanation.show {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .explanation h4 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .explanation p {
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+
+        .pickup-info {
+            background: white;
+            border: 2px solid #2e7d32;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        .pickup-info strong {
+            color: #1b5e20;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            flex: 1;
+            max-width: 150px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .results.show {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .score-excellent {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        }
+
+        .score-good {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+
+        .score-needs-improvement {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+            padding: 15px 30px;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+
+        .summary-table {
+            margin: 30px 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .summary-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .summary-table th {
+            background: #3498db;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        .summary-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .summary-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .yes-pickup {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .no-pickup {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .quiz-content {
+                padding: 20px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .options {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .follow-up-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="header">
+            <h1>🗺️ MaxTour Pickup Radius Quiz</h1>
+            <p>Test your knowledge of MaxTour's pickup locations and alternatives</p>
+        </div>
+
+        <div class="quiz-content">
+            <div class="question-counter">
+                <span id="questionCount">Hotel 1 of 10</span>
+            </div>
+
+            <!-- Question 1: Golden Nugget -->
+            <div class="question active" data-question="1">
+                <div class="hotel-card">
+                    <div class="hotel-name">Golden Nugget</div>
+                    <div class="location-info">129 Fremont St, Las Vegas, NV 89101 (Downtown Las Vegas)</div>
+                    <div class="options">
+                        <div class="option-btn" data-answer="yes">YES</div>
+                        <div class="option-btn" data-answer="no">NO</div>
+                    </div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: YES</h4>
+                    <div class="pickup-info">
+                        <p><strong>Golden Nugget is within our pickup radius</strong></p>
+                        <p>Located in Downtown Las Vegas on Fremont Street, which is covered by our standard pickup service.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 2: Orleans -->
+            <div class="question" data-question="2">
+                <div class="hotel-card">
+                    <div class="hotel-name">Orleans</div>
+                    <div class="location-info">4500 W Tropicana Ave, Las Vegas, NV 89103 (West of Strip)</div>
+                    <div class="options">
+                        <div class="option-btn" data-answer="yes">YES</div>
+                        <div class="option-btn" data-answer="no">NO</div>
+                    </div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: YES</h4>
+                    <div class="pickup-info">
+                        <p><strong>Orleans is within our pickup radius</strong></p>
+                        <p>Located within 2 miles of the Las Vegas Strip, making it eligible for direct pickup service.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 3: South Point -->
+            <div class="question" data-question="3">
+                <div class="hotel-card">
+                    <div class="hotel-name">South Point</div>
+                    <div class="location-info">9777 Las Vegas Blvd S, Las Vegas, NV 89183 (Far South of Strip)</div>
+                    <div class="options">
+                        <div class="option-btn" data-answer="yes">YES</div>
+                        <div class="option-btn" data-answer="no">NO</div>
+                    </div>
+                </div>
+                <div class="follow-up">
+                    <h4>🚫 South Point is outside our pickup radius</h4>
+                    <p><strong>What is the closest hotel for pickup?</strong></p>
+                    <div class="follow-up-options">
+                        <div class="follow-up-option" data-answer="mandalay">Mandalay Bay</div>
+                        <div class="follow-up-option" data-answer="luxor">Luxor</div>
+                        <div class="follow-up-option" data-answer="mgm">MGM Grand</div>
+                        <div class="follow-up-option" data-answer="excalibur">Excalibur</div>
+                    </div>
+                    <p><strong>What is the closest hotel with FREE parking?</strong></p>
+                    <div class="follow-up-options" id="parking-options">
+                        <div class="follow-up-option" data-answer="palms">Palms</div>
+                        <div class="follow-up-option" data-answer="orleans">Orleans</div>
+                        <div class="follow-up-option" data-answer="palace">Palace Station</div>
+                        <div class="follow-up-option" data-answer="treasure">Treasure Island</div>
+                    </div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answers</h4>
+                    <div class="pickup-info">
+                        <p><strong>Closest Pickup Hotel:</strong> Mandalay Bay</p>
+                        <p><strong>Closest Free Parking:</strong> Palms</p>
+                        <p><strong>Why:</strong> South Point is too far south of the Strip, outside our 2-mile radius. Mandalay Bay is the southernmost hotel we service, while Palms offers free parking and is within our pickup area.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 4: Jockey Club -->
+            <div class="question" data-question="4">
+                <div class="hotel-card">
+                    <div class="hotel-name">Jockey Club</div>
+                    <div class="location-info">3700 Las Vegas Blvd S, Las Vegas, NV 89109 (Mid-Strip)</div>
+                    <div class="options">
+                        <div class="option-btn" data-answer="yes">YES</div>
+                        <div class="option-btn" data-answer="no">NO</div>
+                    </div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: YES</h4>
+                    <div class="pickup-info">
+                        <p><strong>Jockey Club is within our pickup radius</strong></p>
+                        <p>Located directly on the Las Vegas Strip between Paris and Bellagio, well within our service area.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 5: Suncoast -->
+            <div class="question" data-question="5">
+                <div class="hotel-card">
+                    <div class="hotel-name">Suncoast</div>
+                    <div class="location-info">9090 Alta Dr, Las Vegas, NV 89145 (Summerlin/Northwest)</div>
+                    <div class="options">
+                        <div class="option-btn" data-answer="yes">YES</div>
+                        <div class="option-btn" data-answer="no">NO</div>
+                    </div>
+                </div>
+                <div class="follow-up">
+                    <h4>🚫 Suncoast is outside our pickup radius</h4>
+                    <p><strong>What is the closest hotel for pickup?</strong></p>
+                    <div class="follow-up-options">
+                        <div class="follow-up-option" data-answer="palace">Palace Station</div>
+                        <div class="follow-up-option" data-answer="sahara">Sahara</div>
+                        <div class="follow-up-option" data-answer="wynn">Wynn</div>
+                        <div class="follow-up-option" data-answer="red-rock">Red Rock</div>
+                    </div>
+                    <p><strong>What is the closest hotel with FREE parking?</strong></p>
+                    <div class="follow-up-options" id="parking-options-5">
+                        <div class="follow-up-option" data-answer="palace">Palace Station</div>
+                        <div class="follow-up-option" data-answer="orleans">Orleans</div>
+                        <div class="follow-up-option" data-answer="treasure">Treasure Island</div>
+                        <div class="follow-up-option" data-answer="palms">Palms</div>
+                    </div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer</h4>
+                    <div class="pickup-info">
+                        <p><strong>Closest Pickup Hotel:</strong> Palace Station</p>
+                        <p><strong>Closest Free Parking:</strong> Palace Station</p>
+                        <p><strong>Why:</strong> Suncoast is in Summerlin, far northwest of the Strip. Palace Station is the closest hotel within our pickup radius for guests staying in the northwest area and also offers free parking.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 6: Westgate -->
+            <div class="question" data-question="6">
+                <div class="hotel-card">
+                    <div class="hotel-name">Westgate</div>
+                    <div class="location-info">3000 Paradise Rd, Las Vegas, NV 89109 (East of Strip)</div>
+                    <div class="options">
+                        <div class="option-btn" data-answer="yes">YES</div>
+                        <div class="option-btn" data-answer="no">NO</div>
+                    </div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: YES</h4>
+                    <div class="pickup-info">
+                        <p><strong>Westgate is within our pickup radius</strong></p>
+                        <p>Located on Paradise Road, within 2 miles of the Las Vegas Strip and covered by our pickup service.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 7: Hampton Inn Las Vegas Strip South -->
+            <div class="question" data-question="7">
+                <div class="hotel-card">
+                    <div class="hotel-name">Hampton Inn Las Vegas Strip South</div>
+                    <div class="location-info">9640 Las Vegas Blvd S, Las Vegas, NV 89183 (Far South)</div>
+                    <div class="options">
+                        <div class="option-btn" data-answer="yes">YES</div>
+                        <div class="option-btn" data-answer="no">NO</div>
+                    </div>
+                </div>
+                <div class="follow-up">
+                    <h4>🚫 Hampton Inn Strip South is outside our pickup radius</h4>
+                    <p><strong>What is the closest hotel for pickup?</strong></p>
+                    <div class="follow-up-options">
+                        <div class="follow-up-option" data-answer="mandalay">Mandalay Bay</div>
+                        <div class="follow-up-option" data-answer="luxor">Luxor</div>
+                        <div class="follow-up-option" data-answer="mgm">MGM Grand</div>
+                        <div class="follow-up-option" data-answer="four-seasons">Four Seasons</div>
+                    </div>
+                    <p><strong>What is the closest hotel with FREE parking?</strong></p>
+                    <div class="follow-up-options" id="parking-options-7">
+                        <div class="follow-up-option" data-answer="palms">Palms</div>
+                        <div class="follow-up-option" data-answer="orleans">Orleans</div>
+                        <div class="follow-up-option" data-answer="palace">Palace Station</div>
+                        <div class="follow-up-option" data-answer="treasure">Treasure Island</div>
+                    </div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answers</h4>
+                    <div class="pickup-info">
+                        <p><strong>Closest Pickup Hotel:</strong> Mandalay Bay</p>
+                        <p><strong>Closest Free Parking:</strong> Palms</p>
+                        <p><strong>Why:</strong> Hampton Inn Strip South is too far south. Mandalay Bay is our southernmost pickup point, while Palms offers the closest free parking option within our service area.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 8: Bellagio -->
+            <div class="question" data-question="8">
+                <div class="hotel-card">
+                    <div class="hotel-name">Bellagio</div>
+                    <div class="location-info">3600 Las Vegas Blvd S, Las Vegas, NV 89109 (Mid-Strip)</div>
+                    <div class="options">
+                        <div class="option-btn" data-answer="yes">YES</div>
+                        <div class="option-btn" data-answer="no">NO</div>
+                    </div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: YES</h4>
+                    <div class="pickup-info">
+                        <p><strong>Bellagio is within our pickup radius</strong></p>
+                        <p>One of the most iconic hotels on the Las Vegas Strip, definitely covered by our pickup service.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 9: Cosmopolitan -->
+            <div class="question" data-question="9">
+                <div class="hotel-card">
+                    <div class="hotel-name">Cosmopolitan</div>
+                    <div class="location-info">3708 Las Vegas Blvd S, Las Vegas, NV 89109 (Mid-Strip)</div>
+                    <div class="options">
+                        <div class="option-btn" data-answer="yes">YES</div>
+                        <div class="option-btn" data-answer="no">NO</div>
+                    </div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answer: YES</h4>
+                    <div class="pickup-info">
+                        <p><strong>Cosmopolitan is within our pickup radius</strong></p>
+                        <p>Located directly on the Las Vegas Strip between Bellagio and Planet Hollywood, well within our service area.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 10: Arizona Charlie's Boulder -->
+            <div class="question" data-question="10">
+                <div class="hotel-card">
+                    <div class="hotel-name">Arizona Charlie's Boulder</div>
+                    <div class="location-info">4575 Boulder Hwy, Las Vegas, NV 89121 (Boulder Highway)</div>
+                    <div class="options">
+                        <div class="option-btn" data-answer="yes">YES</div>
+                        <div class="option-btn" data-answer="no">NO</div>
+                    </div>
+                </div>
+                <div class="follow-up">
+                    <h4>🚫 Arizona Charlie's Boulder is outside our pickup radius</h4>
+                    <p><strong>What is the closest hotel for pickup?</strong></p>
+                    <div class="follow-up-options">
+                        <div class="follow-up-option" data-answer="marriott">Las Vegas Marriott</div>
+                        <div class="follow-up-option" data-answer="westgate">Westgate</div>
+                        <div class="follow-up-option" data-answer="sahara">Sahara</div>
+                        <div class="follow-up-option" data-answer="palace">Palace Station</div>
+                    </div>
+                    <p><strong>What is the closest hotel with FREE parking?</strong></p>
+                    <div class="follow-up-options" id="parking-options-10">
+                        <div class="follow-up-option" data-answer="treasure">Treasure Island</div>
+                        <div class="follow-up-option" data-answer="palace">Palace Station</div>
+                        <div class="follow-up-option" data-answer="orleans">Orleans</div>
+                        <div class="follow-up-option" data-answer="palms">Palms</div>
+                    </div>
+                </div>
+                <div class="explanation">
+                    <h4>✅ Correct Answers</h4>
+                    <div class="pickup-info">
+                        <p><strong>Closest Pickup Hotel:</strong> Las Vegas Marriott</p>
+                        <p><strong>Closest Free Parking:</strong> Treasure Island</p>
+                        <p><strong>Why:</strong> Arizona Charlie's Boulder is on Boulder Highway, outside our pickup area. Las Vegas Marriott is the closest pickup point, while Treasure Island offers free parking within our service area.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" id="prevBtn" onclick="changeQuestion(-1)">Previous</button>
+                <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">Next</button>
+            </div>
+        </div>
+
+        <div class="results" id="results">
+            <h2>🎉 Quiz Complete!</h2>
+            <div class="score-circle" id="scoreCircle">
+                <span id="scoreText"></span>
+            </div>
+            <h3 id="scoreMessage"></h3>
+            <p id="scoreDetails"></p>
+            
+            <div class="summary-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Hotel</th>
+                            <th>Pickup Available</th>
+                            <th>Alternative Pickup</th>
+                            <th>Free Parking Option</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Golden Nugget</td>
+                            <td class="yes-pickup">YES</td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>Orleans</td>
+                            <td class="yes-pickup">YES</td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>South Point</td>
+                            <td class="no-pickup">NO</td>
+                            <td>Mandalay Bay</td>
+                            <td>Palms</td>
+                        </tr>
+                        <tr>
+                            <td>Jockey Club</td>
+                            <td class="yes-pickup">YES</td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>Suncoast</td>
+                            <td class="no-pickup">NO</td>
+                            <td>Palace Station</td>
+                            <td>Palace Station</td>
+                        </tr>
+                        <tr>
+                            <td>Westgate</td>
+                            <td class="yes-pickup">YES</td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>Hampton Inn Strip South</td>
+                            <td class="no-pickup">NO</td>
+                            <td>Mandalay Bay</td>
+                            <td>Palms</td>
+                        </tr>
+                        <tr>
+                            <td>Bellagio</td>
+                            <td class="yes-pickup">YES</td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>Cosmopolitan</td>
+                            <td class="yes-pickup">YES</td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>Arizona Charlie's Boulder</td>
+                            <td class="no-pickup">NO</td>
+                            <td>Las Vegas Marriott</td>
+                            <td>Treasure Island</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <button class="btn restart-btn" onclick="restartQuiz()">Take Quiz Again</button>
+        </div>
+    </div>
+
+    <script>
+        let currentQuestion = 1;
+        const totalQuestions = 10;
+        let userAnswers = {};
+        let followUpAnswers = {};
+        let correctAnswers = {
+            1: 'yes', 2: 'yes', 3: 'no', 4: 'yes', 5: 'no',
+            6: 'yes', 7: 'no', 8: 'yes', 9: 'yes', 10: 'no'
+        };
+        let correctFollowUps = {
+            3: { closest: 'mandalay', parking: 'palms' },
+            5: { closest: 'palace', parking: 'palace' },
+            7: { closest: 'mandalay', parking: 'palms' },
+            10: { closest: 'marriott', parking: 'treasure' }
+        };
+
+        function updateQuestionCounter() {
+            document.getElementById('questionCount').textContent = `Hotel ${currentQuestion} of ${totalQuestions}`;
+        }
+
+        function showQuestion(questionNum) {
+            document.querySelectorAll('.question').forEach(q => {
+                q.classList.remove('active');
+            });
+            document.querySelector(`[data-question="${questionNum}"]`).classList.add('active');
+            updateQuestionCounter();
+            updateNavButtons();
+        }
+
+        function updateNavButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.style.display = currentQuestion === 1 ? 'none' : 'block';
+            
+            if (currentQuestion === totalQuestions) {
+                nextBtn.textContent = 'Finish Quiz';
+                nextBtn.onclick = finishQuiz;
+            } else {
+                nextBtn.textContent = 'Next';
+                nextBtn.onclick = nextQuestion;
+            }
+        }
+
+        function nextQuestion() {
+            const currentQuestionDiv = document.querySelector(`[data-question="${currentQuestion}"]`);
+            const selectedOption = currentQuestionDiv.querySelector('.option-btn.selected');
+            
+            if (!selectedOption) {
+                alert('Please select YES or NO before continuing.');
+                return;
+            }
+            
+            // Check if this is a "NO" answer that requires follow-up
+            const followUp = currentQuestionDiv.querySelector('.follow-up');
+            if (selectedOption.dataset.answer === 'no' && followUp && followUp.classList.contains('show')) {
+                const followUpSelected = currentQuestionDiv.querySelectorAll('.follow-up-option.selected');
+                const expectedFollowUps = correctFollowUps[currentQuestion];
+                let requiredFollowUps = 1;
+                if (expectedFollowUps.parking) requiredFollowUps = 2;
+                
+                if (followUpSelected.length < requiredFollowUps) {
+                    alert('Please answer all follow-up questions before continuing.');
+                    return;
+                }
+            }
+            
+            if (currentQuestion < totalQuestions) {
+                currentQuestion++;
+                showQuestion(currentQuestion);
+            }
+        }
+
+        function changeQuestion(direction) {
+            currentQuestion += direction;
+            if (currentQuestion < 1) currentQuestion = 1;
+            if (currentQuestion > totalQuestions) currentQuestion = totalQuestions;
+            showQuestion(currentQuestion);
+        }
+
+        function finishQuiz() {
+            const currentQuestionDiv = document.querySelector(`[data-question="${currentQuestion}"]`);
+            const selectedOption = currentQuestionDiv.querySelector('.option-btn.selected');
+            
+            if (!selectedOption) {
+                alert('Please select YES or NO before finishing the quiz.');
+                return;
+            }
+            
+            // Check final follow-up if needed
+            const followUp = currentQuestionDiv.querySelector('.follow-up');
+            if (selectedOption.dataset.answer === 'no' && followUp && followUp.classList.contains('show')) {
+                const followUpSelected = currentQuestionDiv.querySelectorAll('.follow-up-option.selected');
+                const expectedFollowUps = correctFollowUps[currentQuestion];
+                let requiredFollowUps = 1;
+                if (expectedFollowUps.parking) requiredFollowUps = 2;
+                
+                if (followUpSelected.length < requiredFollowUps) {
+                    alert('Please answer all follow-up questions before finishing.');
+                    return;
+                }
+            }
+            
+            calculateScore();
+        }
+
+        function calculateScore() {
+            let correctCount = 0;
+            let totalPossible = totalQuestions;
+            
+            // Check main answers
+            for (let i = 1; i <= totalQuestions; i++) {
+                if (userAnswers[i] === correctAnswers[i]) {
+                    correctCount++;
+                }
+            }
+            
+            // Check follow-up answers (each follow-up question counts as additional points)
+            let followUpCorrect = 0;
+            let totalFollowUps = 0;
+            for (let question in correctFollowUps) {
+                const expected = correctFollowUps[question];
+                const userFollowUp = followUpAnswers[question] || {};
+                
+                if (expected.closest) {
+                    totalFollowUps++;
+                    if (userFollowUp.closest === expected.closest) {
+                        followUpCorrect++;
+                    }
+                }
+                if (expected.parking) {
+                    totalFollowUps++;
+                    if (userFollowUp.parking === expected.parking) {
+                        followUpCorrect++;
+                    }
+                }
+            }
+            
+            totalPossible += totalFollowUps;
+            const totalCorrect = correctCount + followUpCorrect;
+            const percentage = Math.round((totalCorrect / totalPossible) * 100);
+            
+            displayResults(totalCorrect, totalPossible, percentage);
+        }
+
+        function displayResults(correctCount, totalPossible, percentage) {
+            document.querySelector('.quiz-content').style.display = 'none';
+            const results = document.getElementById('results');
+            results.classList.add('show');
+            
+            const scoreCircle = document.getElementById('scoreCircle');
+            const scoreText = document.getElementById('scoreText');
+            const scoreMessage = document.getElementById('scoreMessage');
+            const scoreDetails = document.getElementById('scoreDetails');
+            
+            scoreText.textContent = `${percentage}%`;
+            scoreDetails.textContent = `You answered ${correctCount} out of ${totalPossible} questions correctly.`;
+            
+            if (percentage >= 90) {
+                scoreCircle.className = 'score-circle score-excellent';
+                scoreMessage.textContent = 'Excellent! You know MaxTour\'s pickup radius perfectly!';
+            } else if (percentage >= 75) {
+                scoreCircle.className = 'score-circle score-good';
+                scoreMessage.textContent = 'Good job! Review the areas where you missed questions.';
+            } else {
+                scoreCircle.className = 'score-circle score-needs-improvement';
+                scoreMessage.textContent = 'Study the pickup radius map and alternative hotel options.';
+            }
+        }
+
+        function restartQuiz() {
+            currentQuestion = 1;
+            userAnswers = {};
+            followUpAnswers = {};
+            
+            // Reset all options
+            document.querySelectorAll('.option-btn').forEach(option => {
+                option.classList.remove('selected', 'correct', 'incorrect');
+            });
+            
+            document.querySelectorAll('.follow-up-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Hide all follow-ups and explanations
+            document.querySelectorAll('.follow-up').forEach(fu => {
+                fu.classList.remove('show');
+            });
+            
+            document.querySelectorAll('.explanation').forEach(exp => {
+                exp.classList.remove('show');
+            });
+            
+            // Show quiz content and hide results
+            document.querySelector('.quiz-content').style.display = 'block';
+            document.getElementById('results').classList.remove('show');
+            
+            showQuestion(1);
+        }
+
+        // Handle main option selection
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('option-btn')) {
+                const questionDiv = e.target.closest('.question');
+                const questionNum = parseInt(questionDiv.dataset.question);
+                
+                // Remove previous selection
+                questionDiv.querySelectorAll('.option-btn').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                
+                // Add selection to clicked option
+                e.target.classList.add('selected');
+                
+                // Store user answer
+                userAnswers[questionNum] = e.target.dataset.answer;
+                
+                // Show follow-up if NO is selected
+                const followUp = questionDiv.querySelector('.follow-up');
+                if (e.target.dataset.answer === 'no' && followUp) {
+                    setTimeout(() => {
+                        followUp.classList.add('show');
+                    }, 300);
+                } else {
+                    // Show explanation for YES answers
+                    setTimeout(() => {
+                        showExplanation(questionNum);
+                    }, 300);
+                }
+            }
+        });
+
+        // Handle follow-up option selection
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('follow-up-option')) {
+                const questionDiv = e.target.closest('.question');
+                const questionNum = parseInt(questionDiv.dataset.question);
+                const followUpDiv = e.target.closest('.follow-up-options');
+                
+                // Determine if this is closest hotel or parking question
+                const isParking = followUpDiv.id.includes('parking') || 
+                                 followUpDiv.previousElementSibling.textContent.includes('FREE parking');
+                
+                // Remove previous selection in this group
+                followUpDiv.querySelectorAll('.follow-up-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                
+                // Add selection to clicked option
+                e.target.classList.add('selected');
+                
+                // Store follow-up answer
+                if (!followUpAnswers[questionNum]) {
+                    followUpAnswers[questionNum] = {};
+                }
+                
+                if (isParking) {
+                    followUpAnswers[questionNum].parking = e.target.dataset.answer;
+                } else {
+                    followUpAnswers[questionNum].closest = e.target.dataset.answer;
+                }
+                
+                // Check if all follow-ups are answered
+                const expectedFollowUps = correctFollowUps[questionNum];
+                let allAnswered = true;
+                
+                if (expectedFollowUps.closest && !followUpAnswers[questionNum].closest) {
+                    allAnswered = false;
+                }
+                if (expectedFollowUps.parking && !followUpAnswers[questionNum].parking) {
+                    allAnswered = false;
+                }
+                
+                if (allAnswered) {
+                    setTimeout(() => {
+                        showExplanation(questionNum);
+                    }, 500);
+                }
+            }
+        });
+
+        function showExplanation(questionNum) {
+            const questionDiv = document.querySelector(`[data-question="${questionNum}"]`);
+            const explanation = questionDiv.querySelector('.explanation');
+            const correctAnswer = correctAnswers[questionNum];
+            const userAnswer = userAnswers[questionNum];
+            
+            // Highlight correct and incorrect main answers
+            questionDiv.querySelectorAll('.option-btn').forEach(option => {
+                if (option.dataset.answer === correctAnswer) {
+                    option.classList.add('correct');
+                } else if (option.dataset.answer === userAnswer && userAnswer !== correctAnswer) {
+                    option.classList.add('incorrect');
+                }
+            });
+            
+            explanation.classList.add('show');
+        }
+
+        // Initialize
+        updateNavButtons();
+    </script>
+</body>
+</html>
